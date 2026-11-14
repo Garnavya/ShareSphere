@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sharesphere-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: sharesphere_db
+      MYSQL_USER: sharesphere_user
+      MYSQL_PASSWORD: sharesphere_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - sharesphere-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: sharesphere-backend
+    restart: always
+    environment:
+      PORT: 5000
+      DATABASE_URL: mysql://sharesphere_user:sharesphere_pass@mysql:3306/sharesphere_db
+      JWT_SECRET: supersecret_jwt_key_for_development_only
+      CLIENT_URL: http://localhost:5173
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - sharesphere-network
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: sharesphere-frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+    networks:
+      - sharesphere-network
+
+networks:
+  sharesphere-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
