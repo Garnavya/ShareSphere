@@ -100,26 +100,8 @@ sharesphere/
 │   ├── package.json
 │   └── vite.config.js
 │
-├── server/                            # Java 17+ / Spring Boot 3 REST API
-│   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/sharesphere/
-│   │   │   │   ├── ShareSphereApplication.java
-│   │   │   │   ├── config/            # SecurityConfig, CorsConfig
-│   │   │   │   ├── controller/        # Auth, Item, Booking REST controllers
-│   │   │   │   ├── dto/               # Request & Response payload models + Validation
-│   │   │   │   ├── entity/            # JPA Entities (User, Item, Booking, DeliveryTask, etc.)
-│   │   │   │   ├── repository/        # Spring Data JPA Repositories (Pessimistic Locking)
-│   │   │   │   ├── security/          # JWT Token Provider, Auth Filter & UserDetails
-│   │   │   │   ├── service/           # Concurrency-safe business logic & OTP service
-│   │   │   │   └── exception/         # RestControllerAdvice Global Exception Handler
-│   │   │   └── resources/
-│   │   │       ├── application.yml    # Database, Security & Server config
-│   │   │       └── db/migration/      # Flyway SQL migrations (V1__init_schema.sql)
-│   │   └── test/java/com/sharesphere/ # JUnit 5 & Mockito test suites
-│   ├── mvnw / mvnw.cmd                # Maven Wrapper scripts
-│   ├── Dockerfile                     # Multi-stage JDK/JRE container build
-│   └── pom.xml                        # Maven dependency descriptor
+├── server/                            # Backend REST API (Reserved for Backend Lead to build from scratch)
+│   └── .gitkeep
 │
 ├── .gitignore                         # Project-wide git exclusion rules
 ├── docker-compose.yml                 # One-click multi-container orchestration
@@ -205,18 +187,9 @@ CREATE DATABASE sharesphere_db;
 
 ---
 
-### Step 2: Backend Setup (Java / Spring Boot)
-```bash
-cd server
-
-# Using Maven Wrapper (Windows PowerShell / CMD)
-.\mvnw.cmd clean spring-boot:run
-
-# Using Maven Wrapper (Linux / macOS / Git Bash)
-./mvnw clean spring-boot:run
-```
-*Flyway will automatically execute database migrations (`V1__init_schema.sql`) on startup.*  
-*Backend API will run at `http://localhost:5000`.*
+### Step 2: Backend Setup
+> *The backend module is currently assigned to the Backend Lead for implementation from scratch in `server/`.*
+> *Once the backend scaffolding is pushed, start the service here.*
 
 ---
 

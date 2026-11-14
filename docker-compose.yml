@@ -22,26 +22,26 @@ services:
       timeout: 5s
       retries: 5
 
-  server:
-    build:
-      context: ./server
-      dockerfile: Dockerfile
-    container_name: sharesphere-backend
-    restart: always
-    environment:
-      SERVER_PORT: 5000
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sharesphere_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: sharesphere_user
-      SPRING_DATASOURCE_PASSWORD: sharesphere_pass
-      JWT_SECRET: supersecret_jwt_key_for_development_only_must_be_32_bytes_long
-      CLIENT_URL: http://localhost:5173
-    ports:
-      - "5000:5000"
-    depends_on:
-      mysql:
-        condition: service_healthy
-    networks:
-      - sharesphere-network
+#  server:
+#    build:
+#      context: ./server
+#      dockerfile: Dockerfile
+#    container_name: sharesphere-backend
+#    restart: always
+#    environment:
+#      SERVER_PORT: 5000
+#      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sharesphere_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+#      SPRING_DATASOURCE_USERNAME: sharesphere_user
+#      SPRING_DATASOURCE_PASSWORD: sharesphere_pass
+#      JWT_SECRET: supersecret_jwt_key_for_development_only_must_be_32_bytes_long
+#      CLIENT_URL: http://localhost:5173
+#    ports:
+#      - "5000:5000"
+#    depends_on:
+#      mysql:
+#        condition: service_healthy
+#    networks:
+#      - sharesphere-network
 
   client:
     build:
@@ -51,8 +51,8 @@ services:
     restart: always
     ports:
       - "5173:5173"
-    depends_on:
-      - server
+#    depends_on:
+#      - server
     networks:
       - sharesphere-network
 
