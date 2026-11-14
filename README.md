@@ -29,8 +29,8 @@ In modern urban residential clusters and university campuses, individuals freque
 
 The application adopts an **N-Tier Client-Server Architecture**:
 1. **Presentation Tier:** React.js Single-Page Application (SPA) styled with Tailwind CSS.
-2. **Application Tier:** Node.js (v20 LTS) RESTful API powered by Express.js with JWT authentication, RBAC authorization, and input validation.
-3. **Data Tier:** Relational MySQL 8.0 managed via Prisma ORM for type safety, automated migrations, and transactional isolation.
+2. **Application Tier:** Java 17+ RESTful API powered by Spring Boot 3.x with Spring Security (stateless JWT), Jakarta Bean Validation, and RBAC authorization.
+3. **Data Tier:** Relational MySQL 8.0 managed via Spring Data JPA (Hibernate) with Flyway automated migrations and pessimistic concurrency locks (`@Lock(LockModeType.PESSIMISTIC_WRITE)`).
 4. **Third-Party & Media Services:** Cloudinary CDN for condition image hosting and Leaflet/OpenStreetMap for spatial proximity.
 
 ```
@@ -41,11 +41,11 @@ The application adopts an **N-Tier Client-Server Architecture**:
                                    │ HTTPS / REST (JSON)
                                    ▼
        ┌────────────────────────────────────────────────────────┐
-       │               Backend API (Node.js/Express)            │
-       │  • Auth & RBAC Middleware    • Atomic Booking Engine   │
+       │            Backend API (Java / Spring Boot 3)          │
+       │  • Spring Security (JWT)     • Atomic Booking Engine   │
        │  • Delivery Dispatch Queue   • OTP Handover Validator  │
        └───────────────────────────┬────────────────────────────┘
-                                   │ Prisma ORM / SQL Pools
+                                   │ Spring Data JPA / Hibernate
                                    ▼
        ┌────────────────────────────────────────────────────────┐
        │           Persistence Layer (MySQL 8.0)                │
@@ -100,22 +100,26 @@ sharesphere/
 │   ├── package.json
 │   └── vite.config.js
 │
-├── server/                            # Node.js + Express.js REST API
-│   ├── prisma/                        # Database Schema & Migrations
-│   │   ├── schema.prisma              # Complete MySQL schema definition
-│   │   └── seed.js                    # Mock data seeder
+├── server/                            # Java 17+ / Spring Boot 3 REST API
 │   ├── src/
-│   │   ├── config/                    # Database, Cloudinary & environment configs
-│   │   ├── controllers/               # Route controllers (Auth, Items, Bookings)
-│   │   ├── middlewares/               # JWT, RBAC, error handler, Multer upload
-│   │   ├── routes/                    # API route endpoints (/api/v1/...)
-│   │   ├── services/                  # Business logic (Atomic locking, OTP generator)
-│   │   ├── utils/                     # Token generators, API response formatters
-│   │   ├── app.js                     # Express application definition
-│   │   └── server.js                  # Server entrypoint
-│   ├── tests/                         # Unit & integration test suites
-│   ├── .env.example
-│   └── package.json
+│   │   ├── main/
+│   │   │   ├── java/com/sharesphere/
+│   │   │   │   ├── ShareSphereApplication.java
+│   │   │   │   ├── config/            # SecurityConfig, CorsConfig
+│   │   │   │   ├── controller/        # Auth, Item, Booking REST controllers
+│   │   │   │   ├── dto/               # Request & Response payload models + Validation
+│   │   │   │   ├── entity/            # JPA Entities (User, Item, Booking, DeliveryTask, etc.)
+│   │   │   │   ├── repository/        # Spring Data JPA Repositories (Pessimistic Locking)
+│   │   │   │   ├── security/          # JWT Token Provider, Auth Filter & UserDetails
+│   │   │   │   ├── service/           # Concurrency-safe business logic & OTP service
+│   │   │   │   └── exception/         # RestControllerAdvice Global Exception Handler
+│   │   │   └── resources/
+│   │   │       ├── application.yml    # Database, Security & Server config
+│   │   │       └── db/migration/      # Flyway SQL migrations (V1__init_schema.sql)
+│   │   └── test/java/com/sharesphere/ # JUnit 5 & Mockito test suites
+│   ├── mvnw / mvnw.cmd                # Maven Wrapper scripts
+│   ├── Dockerfile                     # Multi-stage JDK/JRE container build
+│   └── pom.xml                        # Maven dependency descriptor
 │
 ├── .gitignore                         # Project-wide git exclusion rules
 ├── docker-compose.yml                 # One-click multi-container orchestration
@@ -148,9 +152,9 @@ To maintain strict modularity, clean Git histories, and prevent merge conflicts 
 | Team Member Role | Primary Technical Responsibility | Assigned Feature Branch Namespace | Key Deliverables & Modules Owned |
 | :--- | :--- | :--- | :--- |
 | **Frontend Lead & UI/UX Architect** | Design of responsive React interfaces, Tailwind styling, state management, and user views. | `feat/ui-*` | • `feat/ui-auth-shell`: Login, Register & Protected Routes<br>• `feat/ui-item-catalog`: Browse, search, category filters<br>• `feat/ui-booking-flow`: Interactive date range picker & pricing<br>• `feat/ui-delivery-portal`: Task queue, status update & OTP modal<br>• `feat/ui-admin-dashboard`: Moderation tables & metrics |
-| **Backend & Security Lead** | REST API routing, JWT authentication, Argon2id/bcrypt hashing, RBAC middleware, and security hardening. | `feat/api-*` | • `feat/api-jwt-rbac`: Token issuance, verification & route guards<br>• `feat/api-item-crud`: Listing creation, update, and search query APIs<br>• `feat/api-security`: Helmet, CORS, and Express rate limiting<br>• `feat/api-admin`: System audit logs, report review, and user suspension |
-| **Database & Concurrency Architect** | MySQL schema design, Prisma ORM modeling, ACID transactional locking, and indexing. | `feat/db-*` | • `feat/db-schema-prisma`: Entity models, foreign keys & relationships<br>• `feat/db-atomic-booking`: Concurrency lock algorithm preventing double-bookings<br>• `feat/db-indexing-optimization`: Proximity and date query tuning<br>• `feat/db-seed-migrations`: Database migration scripts and test datasets |
-| **Logistics, QA & Documentation Lead** | Delivery partner workflows, OTP verification logic, Cloudinary CDN integration, and test suites. | `feat/service-*`<br>`feat/tests-*`<br>`docs/*` | • `feat/service-delivery-otp`: Cryptographic 6-digit OTP engine<br>• `feat/service-cloudinary-cdn`: Item & condition photo pipeline<br>• `feat/tests-concurrency`: Jest/Supertest suite for race-condition verification<br>• `docs/srs-api-spec`: SRS, OpenAPI specifications, and final report |
+| **Backend & Security Lead** | Spring Boot REST controllers, Spring Security 6, JWT filter, BCrypt hashing, and Jakarta validation. | `feat/api-*` | • `feat/api-jwt-security`: Spring Security configuration, JWT filter & UserDetails<br>• `feat/api-item-crud`: Listing creation, search and category query endpoints<br>• `feat/api-cors-filters`: CORS origin policy, global exception advice & rate limiting<br>• `feat/api-admin`: Admin audit logging and listing moderation services |
+| **Database & Concurrency Architect** | MySQL schema, JPA Entities, Hibernate relationships, Flyway migrations, and ACID locks. | `feat/db-*` | • `feat/db-schema-flyway`: Flyway SQL baseline migrations (V1__init_schema.sql)<br>• `feat/db-atomic-booking`: Pessimistic locking queries (`@Lock(PESSIMISTIC_WRITE)`)<br>• `feat/db-indexing-optimization`: Proximity and date query tuning<br>• `feat/db-entities-jpa`: Hibernate entity relationships and cascading |
+| **Logistics, QA & Documentation Lead** | Delivery partner workflows, OTP verification logic, Cloudinary CDN integration, and JUnit 5 tests. | `feat/service-*`<br>`feat/tests-*`<br>`docs/*` | • `feat/service-delivery-otp`: Cryptographic 6-digit OTP engine<br>• `feat/service-cloudinary-cdn`: Item & condition photo pipeline<br>• `feat/tests-concurrency`: JUnit 5 / MockMvc suite for race-condition verification<br>• `docs/srs-api-spec`: SRS, OpenAPI specifications, and final report |
 
 ---
 
@@ -187,8 +191,8 @@ To maintain strict modularity, clean Git histories, and prevent merge conflicts 
 ## 7. Local Development Setup Guide
 
 ### Prerequisites
-- **Node.js**: v20.x or higher
-- **npm**: v10.x or higher
+- **Java Development Kit (JDK)**: v17 LTS or higher
+- **Node.js**: v20.x or higher & **npm**: v10.x or higher
 - **MySQL Server**: v8.0 or Docker installed
 
 ---
@@ -201,26 +205,17 @@ CREATE DATABASE sharesphere_db;
 
 ---
 
-### Step 2: Backend Setup
+### Step 2: Backend Setup (Java / Spring Boot)
 ```bash
 cd server
 
-# Install backend dependencies
-npm install
+# Using Maven Wrapper (Windows PowerShell / CMD)
+.\mvnw.cmd clean spring-boot:run
 
-# Configure environment variables
-cp .env.example .env
-# Edit .env with your MySQL credentials, JWT secret, and Cloudinary keys
-
-# Generate Prisma Client & Run Migrations
-npx prisma migrate dev --name init
-
-# (Optional) Seed the database with sample data
-node prisma/seed.js
-
-# Start backend in development mode
-npm run dev
+# Using Maven Wrapper (Linux / macOS / Git Bash)
+./mvnw clean spring-boot:run
 ```
+*Flyway will automatically execute database migrations (`V1__init_schema.sql`) on startup.*  
 *Backend API will run at `http://localhost:5000`.*
 
 ---

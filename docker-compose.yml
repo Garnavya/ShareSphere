@@ -29,9 +29,11 @@ services:
     container_name: sharesphere-backend
     restart: always
     environment:
-      PORT: 5000
-      DATABASE_URL: mysql://sharesphere_user:sharesphere_pass@mysql:3306/sharesphere_db
-      JWT_SECRET: supersecret_jwt_key_for_development_only
+      SERVER_PORT: 5000
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sharesphere_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: sharesphere_user
+      SPRING_DATASOURCE_PASSWORD: sharesphere_pass
+      JWT_SECRET: supersecret_jwt_key_for_development_only_must_be_32_bytes_long
       CLIENT_URL: http://localhost:5173
     ports:
       - "5000:5000"
