@@ -253,11 +253,28 @@ docker-compose up --build
 ## 8. State Lifecycle Dynamics
 
 ### 1. Booking State Transition
-$$\text{PENDING} \xrightarrow{\text{Lender Accepts}} \text{CONFIRMED} \xrightarrow{\text{Handover OTP}} \text{ACTIVE} \xrightarrow{\text{Return OTP}} \text{RETURNED} \xrightarrow{\text{Condition Verified}} \text{COMPLETED}$$
-*(Exceptions: `REJECTED`, `CANCELLED`, `OVERDUE`, `DISPUTED`)*
+
+```mermaid
+flowchart LR
+    PENDING["PENDING"] -->|Lender Accepts| CONFIRMED["CONFIRMED"]
+    CONFIRMED -->|Handover OTP| ACTIVE["ACTIVE"]
+    ACTIVE -->|Return OTP| RETURNED["RETURNED"]
+    RETURNED -->|Condition Verified| COMPLETED["COMPLETED"]
+```
+- **Happy Path:** `PENDING` ➔ `CONFIRMED` ➔ `ACTIVE` ➔ `RETURNED` ➔ `COMPLETED`
+- **Exceptions & Terminations:** `REJECTED`, `CANCELLED`, `OVERDUE`, `DISPUTED`
 
 ### 2. Delivery Partner Task Lifecycle
-$$\text{TASK\_PENDING} \xrightarrow{\text{Broadcast}} \text{AVAILABLE} \xrightarrow{\text{Partner Claim}} \text{ASSIGNED} \xrightarrow{\text{Pickup OTP}} \text{PICKED\_UP} \xrightarrow{\text{Transit}} \text{IN\_TRANSIT} \xrightarrow{\text{Drop-off OTP}} \text{DELIVERED}$$
+
+```mermaid
+flowchart LR
+    T_PENDING["TASK PENDING"] -->|Broadcast| AVAILABLE["AVAILABLE"]
+    AVAILABLE -->|Partner Claims| ASSIGNED["ASSIGNED"]
+    ASSIGNED -->|Pickup OTP| PICKED_UP["PICKED UP"]
+    PICKED_UP -->|In Transit| IN_TRANSIT["IN TRANSIT"]
+    IN_TRANSIT -->|Drop-off OTP| DELIVERED["DELIVERED"]
+```
+- **Task Pipeline:** `TASK_PENDING` ➔ `AVAILABLE` ➔ `ASSIGNED` ➔ `PICKED_UP` ➔ `IN_TRANSIT` ➔ `DELIVERED`
 
 ---
 
