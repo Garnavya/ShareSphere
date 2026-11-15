@@ -55,6 +55,5 @@ Thumbs.db
 uploads/
 tmp/
 temp/
-legacy-node-backend/
 coverage/
 .nyc_output/
